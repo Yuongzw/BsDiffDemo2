@@ -1,4 +1,11 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.yuong.autopatch'
+
+autoPatch {
+    oldApkPath project.rootDir.absolutePath + "\\apk\\app-debug.apk"
+    newApkPath project.rootDir.absolutePath + "\\app\\build\\outputs\\apk\\debug\\app-debug.apk"
+    patchPath project.rootDir.absolutePath + "\\apk\\patch"
+}
 
 android {
     compileSdkVersion 29
@@ -7,8 +14,8 @@ android {
         applicationId "com.example.bsdiffdemo2"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 2
-        versionName "2.0"
+        versionCode 1
+        versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -27,6 +34,28 @@ android {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
             version "3.10.2"
+        }
+    }
+
+    applicationVariants.all { variant ->
+        // gradle 3.0.0+
+        variant.outputs.all {
+            if (variant.buildType.name == "release" || variant.buildType.name == "debug") {
+                variant.assemble.doLast {
+                    variant.outputs.all {
+                        output ->
+                            def outputPath = [project.rootDir.absolutePath, "apk"].join(File.separator)
+                            def outputDir = new File(outputPath)
+                            if (!outputDir.exists()){
+                                outputDir.mkdirs()
+                            }
+                            copy {
+                                from output.outputFile
+                                into outputPath
+                            }
+                    }
+                }
+            }
         }
     }
 }

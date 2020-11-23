@@ -1,2 +1,3 @@
+include ':GradlePlugin'
 include ':app'
 rootProject.name='BsDiffDemo2'
